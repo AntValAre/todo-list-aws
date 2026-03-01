@@ -15,10 +15,12 @@ DEFAULT_TIMEOUT = 2  # in secs
 @pytest.mark.api
 class TestApi(unittest.TestCase):
     
+    @pytest.mark.read_only
     def setUp(self):
         self.assertIsNotNone(BASE_URL, "URL no configurada")
         self.assertTrue(len(BASE_URL) > 8, "URL no configurada")
-
+    
+    @pytest.mark.read_only
     def test_api_listtodos(self):
         print('---------------------------------------')
         print('Starting - integration test List TODO')
@@ -74,6 +76,8 @@ class TestApi(unittest.TestCase):
             response.status_code, 200, "Error en la petición API a {url}"
         )
         print('End - integration test Add TODO')
+        
+    @pytest.mark.read_only
     def test_api_gettodo(self):
         print('---------------------------------------')
         print('Starting - integration test Get TODO')
