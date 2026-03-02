@@ -1,8 +1,13 @@
 pipeline {
     agent any 
+    
+    post {
+        always {
+            deleteDir()
+        }
+    }
 
     stages {
-    
         stage('Get Code') {
             steps {
                 git branch: 'develop', url: 'https://github.com/AntValAre/Practica1.4.git'
@@ -37,7 +42,6 @@ pipeline {
                 
             }
         }
-        
         stage('Rest Test') {
             steps {
                 
@@ -50,30 +54,32 @@ pipeline {
                             --output text)
 
                         
-                       pytest -s --junitxml=rest_report.xml test/integration/todoApiTest.py
+                       pytest -s -v --junitxml=rest_report.xml test/integration/todoApiTest.py
                         '''
 
                         junit 'rest_report.xml'
                 }
                 post {
-                    always {
-                        archiveArtifacts artifacts: 'rest_report.xml', followSymlinks: false
-                    }
+                always {
+                    archiveArtifacts artifacts: 'rest_report.xml', followSymlinks: false
                 }
+            }
         }
-        
         stage('Promote') {
-                when {
-                    equals expected: 'SUCCESS', actual: currentBuild.currentResult
-                }
+            when {
+                equals expected: 'SUCCESS', actual: currentBuild.currentResult
+            }
             steps {
-
+    
                 withCredentials([usernamePassword(credentialsId: 'GitHub-PAT-Cred', passwordVariable: 'GIT_TOKEN', usernameVariable: 'GIT_USERNAME')]) {
                     sh '''
                         git remote set-url origin https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/AntValAre/Practica1.4.git
                         git fetch origin
                         git checkout master
-                        git merge origin/develop
+                        git reset --hard origin/master
+                        git merge origin/develop --no-commit --no-ff
+                        git checkout HEAD -- Jenkinsfile
+                        git commit -m "Promote: Merge develop a master conservando Jenkinsfile de CD"
                         git push https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/AntValAre/Practica1.4.git master
                     '''
                 }
