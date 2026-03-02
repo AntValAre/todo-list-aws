@@ -5,7 +5,7 @@ pipeline {
         stage('Get Code') {
             steps {
                 deleteDir()
-                git branch: 'master', url: 'https://github.com/AntValAre/Practica1.4.git'
+                git branch: 'master', url: 'https://github.com/AntValAre/todo-list-aws.git'
             }
         }
 
