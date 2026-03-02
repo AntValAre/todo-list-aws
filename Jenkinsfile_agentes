@@ -11,7 +11,7 @@ pipeline {
         stage('Get Code') {
             steps {
                 sh '''
-                    echo "--- Ejecutando en Nodo: ---"
+                    
                     whoami
                     hostname
                 '''
@@ -30,7 +30,7 @@ pipeline {
                 unstash 'code'
                 
                 sh '''
-                    echo "--- Ejecutando en Nodo: ---"
+                   
                     whoami
                     hostname
 
@@ -50,7 +50,7 @@ pipeline {
             steps {
                 
                     sh '''
-                        echo "--- Ejecutando en Nodo: ---"
+                        
                         whoami
                         hostname
                         
@@ -80,7 +80,6 @@ pipeline {
                     
                     sh '''
                     
-                        echo "--- Ejecutando en Nodo: ---"
                         whoami
                         hostname
                         
@@ -102,7 +101,29 @@ pipeline {
                 }
             }
         }
-            
-       }
-            
-      }
+       stage('Promote') {
+        when {
+            equals expected: 'SUCCESS', actual: currentBuild.currentResult
+        }
+        steps {
+
+            withCredentials([usernamePassword(credentialsId: 'GitHub-PAT-Cred', passwordVariable: 'GIT_TOKEN', usernameVariable: 'GIT_USERNAME')]) {
+                sh '''
+                    whoami
+                    hostname
+
+                    git remote set-url origin https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/AntValAre/Practica1.4.git
+                    git fetch origin
+                    git checkout master
+                    git reset --hard origin/master
+                    git merge origin/develop --no-commit --no-ff || true
+                    git checkout HEAD -- Jenkinsfile Jenkinsfile_agentes
+                    git add Jenkinsfile Jenkinsfile_agentes
+                    git commit -m "Promote: Merge develop a master conservando Jenkinsfile de CD"
+                    git push https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/AntValAre/Practica1.4.git master
+                '''
+            }
+        }
+    } 
+ }
+}
