@@ -13,7 +13,7 @@ pipeline {
         stage('Get Code') {
             
             steps {
-                git branch: 'master', url: 'https://github.com/AntValAre/Practica1.4.git'
+                git branch: 'master', url: 'https://github.com/AntValAre/todo-list-aws.git'
                
                 stash name: 'code', includes: '**'
             }
